@@ -13,16 +13,6 @@ const client = new Client({
     ]
 });
 
-// Log when the bot successfully connects.
-client.once(Events.ClientReady, c => {
-    console.log(`${c.user.tag} is online.`);
-});
-
-// Log each message (for testing purposed only).
-client.on('messageCreate', (msg) => {
-    console.log(`(${msg.guild.name}/${msg.channel.name}) ${msg.author.username}: ${msg.content}`);
-});
-
 // Add a collection to the client for easy command access.
 client.commands = new Collection();
 
@@ -40,7 +30,7 @@ for (const folder of commandFolders) {
         const filePath = path.join(commandsPath, file);
         const command = require(filePath);
 
-        // Set a new item in the Collection with the key as the command name and the value as the exported module
+        // Set a new item in the Collection with the key as the command name and the value as the exported module.
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
         } else {
@@ -49,30 +39,20 @@ for (const folder of commandFolders) {
     }
 }
 
-// Listen for slash commands.
-client.on(Events.InteractionCreate, async interaction => {
-    if (!interaction.isChatInputCommand()) return;
-    console.log(interaction);
+// Loop through events folder looking for event handlers. Register the event handlers when found.
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
-    const command = interaction.client.commands.get(interaction.commandName);
+for (const file of eventFiles) {
+	const filePath = path.join(eventsPath, file);
+	const event = require(filePath);
 
-    if (!command) {
-        console.error(`No command matching ${interaction.commandName} was found.`);
-        return;
-    }
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
+	}
+}
 
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-        } else {
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-        }
-    }
-});
-
-// Go online
+// Go online.
 client.login(process.env.TOKEN);

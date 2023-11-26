@@ -6,7 +6,7 @@ module.exports = {
     once: false,
     async execute(interaction) {
         if (!interaction.isChatInputCommand()) return;
-        console.log(interaction);
+        console.log(`(${interaction.guild.name}/${interaction.channel.name}) ${interaction.user.username}: /${interaction.commandName}`);
     
         const command = interaction.client.commands.get(interaction.commandName);
     

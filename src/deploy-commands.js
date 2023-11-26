@@ -38,23 +38,17 @@ const rest = new REST().setToken(process.env.TOKEN);
 	try {
 		console.log(`Started refreshing ${publicCommands.length} public and ${privateCommands.length} private application (/) commands.`);
 
-		if (publicCommands.length > 0) {
-            const data = await rest.put(
-                Routes.applicationCommands(process.env.CLIENTID),
-                { body: publicCommands },
-            );
+		const pubData = await rest.put(
+			Routes.applicationCommands(process.env.CLIENTID),
+			{ body: publicCommands },
+		);
 
-            console.log(`Successfully reloaded ${data.length} public application (/) commands.`);
-        }
+		const privData = await rest.put(
+			Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDID),
+			{ body: privateCommands },
+		);
 
-        if (privateCommands.length > 0) {
-            const data = await rest.put(
-                Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDID),
-                { body: privateCommands },
-            );
-
-            console.log(`Successfully reloaded ${data.length} private application (/) commands.`);
-        }
+		console.log(`Successfully reloaded ${publicCommands.length} public and ${privateCommands.length} private application (/) commands.`);
 	} catch (error) {
 		// And of course, make sure you catch and log any errors!
 		console.error(error);

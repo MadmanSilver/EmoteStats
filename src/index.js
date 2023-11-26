@@ -13,8 +13,9 @@ const client = new Client({
     ]
 });
 
-// Add a collection to the client for easy command access.
+// Add command and cooldown collections to the client for easy access.
 client.commands = new Collection();
+client.cooldowns = new Collection();
 
 // Loop through two layers of folders looking for commands. Register the commands in the collection when found.
 const foldersPath = path.join(__dirname, 'commands');

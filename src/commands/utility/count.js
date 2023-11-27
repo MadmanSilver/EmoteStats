@@ -10,7 +10,10 @@ module.exports = {
                 .setDescription('Channel to count emotes in.'))
         .addBooleanOption(option => 
             option.setName('include-external')
-                .setDescription('Should external emotes be included in the count?')),
+                .setDescription('Should external emotes be included in the count?'))
+        .addBooleanOption(option => 
+            option.setName('include-reacts')
+                .setDescription('Should reactions be included in the count?')),
     async execute(interaction) {
         // Let the user know that the command is processing.
         await interaction.deferReply();
@@ -18,6 +21,7 @@ module.exports = {
         const counts = new Collection();
         const channels = [];
         const includeExternal = interaction.options.getBoolean('include-external') ?? false;
+        const includeReacts = interaction.options.getBoolean('include-reacts') ?? true;
         const guildEmoji = [];
 
         if (chan = interaction.options.getChannel('channel')) {
@@ -54,6 +58,21 @@ module.exports = {
                         }
                     }
                 });
+
+                // If including reacts, check reacts.
+                if (includeReacts) {
+                    message.reactions.cache.forEach(react => {
+                        const emoji = `<${react.emoji.animated ? 'a' : ''}:${react.emoji.name}:${react.emoji.id}>`;
+                
+                        if (includeExternal || guildEmoji.includes(emoji)) {
+                            if (counts.has(emoji)) {
+                                counts.set(emoji, counts.get(emoji) + react.count);
+                            } else {
+                                counts.set(emoji, react.count);
+                            }
+                        }
+                    });
+                }
             }
     
             // Loop through paginated message history.
@@ -73,6 +92,21 @@ module.exports = {
                                         }
                                     }
                                 });
+
+                                // If including reacts, check reacts.
+                                if (includeReacts) {
+                                    msg.reactions.cache.forEach(react => {
+                                        const emoji = `<${react.emoji.animated ? 'a' : ''}:${react.emoji.name}:${react.emoji.id}>`;
+                
+                                        if (includeExternal || guildEmoji.includes(emoji)) {
+                                            if (counts.has(emoji)) {
+                                                counts.set(emoji, counts.get(emoji) + react.count);
+                                            } else {
+                                                counts.set(emoji, react.count);
+                                            }
+                                        }
+                                    });
+                                }
                             }
                         });
                     

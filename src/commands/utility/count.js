@@ -41,6 +41,10 @@ module.exports = {
         const emojiRegex = /((?<!\\)<:[^:]+:(\d+)>)|\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu;
       
         for (const channel of channels) {
+            // Set date limit.
+            const dateLimit = new Date(Date.now());
+            dateLimit.setMonth(dateLimit.getMonth() - 6);
+
             // Create message pointer.
             let message = await channel.messages
                 .fetch({ limit: 1 })
@@ -76,11 +80,17 @@ module.exports = {
             }
     
             // Loop through paginated message history.
-            while (message) {
+            while (message && message.createdAt > dateLimit) {
                 await channel.messages
                     .fetch({ limit: 100, before: message.id })
                     .then(messagePage => {
-                        messagePage.forEach(msg => {
+                        for (const msga of messagePage) {
+                            const msg = msga[1];
+                            
+                            if (msg.createdAt < dateLimit) {
+                                break;
+                            }
+                            
                             if (!msg.author.bot) {
                                 // Look for emotes based on emoteRegex and increase its count when found.
                                 msg.content.match(emojiRegex)?.forEach(emoji => {
@@ -108,7 +118,7 @@ module.exports = {
                                     });
                                 }
                             }
-                        });
+                        }
                     
                         // Update our message pointer to be the last message on the page of messages.
                         message = 0 < messagePage.size ? messagePage.at(messagePage.size - 1) : null;

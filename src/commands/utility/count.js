@@ -119,7 +119,7 @@ module.exports = {
         // Construct response.
         let response = 'Results:';
 
-        counts.forEach((value, key) => {
+        counts.sort((a, b) => b - a).forEach((value, key) => {
             let nextLine = `\n${key} - ${value}`;
 
             if (response.length + nextLine.length <= 2000) {

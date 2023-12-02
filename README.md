@@ -13,5 +13,5 @@ Should you wish to run your own instance of this bot, you can install it accordi
 5. Create a new application at https://discord.com/developers/applications.
 6. In the "Bot" tab of your new application, click "Reset Token" and copy the token.
 7. Create a .env file in your copy of the repo.
-8. In the .env file, type `TOKEN = ` and then paste your token. Save the file.
+8. In the .env file, type `DISCORD_TOKEN = ` and then paste your token. Save the file.
 9. In your terminal, run `node src/index.js`.

@@ -31,7 +31,7 @@ for (const folder of commandFolders) {
 }
 
 // Construct and prepare an instance of the REST module
-const rest = new REST().setToken(process.env.TOKEN);
+const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
 // and deploy your commands!
 (async () => {
@@ -39,16 +39,20 @@ const rest = new REST().setToken(process.env.TOKEN);
 		console.log(`Started refreshing ${publicCommands.length} public and ${privateCommands.length} private application (/) commands.`);
 
 		const pubData = await rest.put(
-			Routes.applicationCommands(process.env.CLIENTID),
+			Routes.applicationCommands(process.env.CLIENT_ID),
 			{ body: publicCommands },
 		);
 
-		const privData = await rest.put(
-			Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDID),
-			{ body: privateCommands },
-		);
+		if ("GUILD_ID" in process.env) {
+			const privData = await rest.put(
+				Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+				{ body: privateCommands },
+			);
+		} else {
+			console.warn("No GUILD_ID set in .env, cannot deploy private commands.");
+		}
 
-		console.log(`Successfully reloaded ${publicCommands.length} public and ${privateCommands.length} private application (/) commands.`);
+		console.log(`Successfully reloaded ${publicCommands.length} public and ${"GUILD_ID" in process.env ? privateCommands.length : 0} private application (/) commands.`);
 	} catch (error) {
 		// And of course, make sure you catch and log any errors!
 		console.error(error);
